@@ -26,6 +26,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     SensorEvent trigger;
     private static final int THRESHOLD = 60;
 
+    long lastToggleTimestamp;
+
     private static final String TAG = "MainActivity";
 
     @Override
@@ -49,17 +51,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (on) {
             if (camera != null) {
                 params.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-                camera.setParameters(params);
-                camera.stopPreview();
+                try {
+                    camera.setParameters(params);
+                    camera.stopPreview();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 on = false;
             }
         } else {
             try {
-                camera = Camera.open();
+                if (camera == null) {
+                    camera = Camera.open();
+                    camera.setPreviewTexture(new SurfaceTexture(0));
+                }
                 params = camera.getParameters();
                 params.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
                 camera.setParameters(params);
-                camera.setPreviewTexture(new SurfaceTexture(0));
                 camera.startPreview();
                 on = true;
             } catch (Exception e) {
@@ -83,15 +91,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     e.printStackTrace();
                 }
             } else {
-                if (sensorEvent.timestamp - trigger.timestamp > 1000) {
+                if (sensorEvent.timestamp - trigger.timestamp > 1000 || sensorEvent.timestamp - lastToggleTimestamp < 1000) {
                     trigger = null;
                 } else {
                     toggleFlashlight();
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                    lastToggleTimestamp = sensorEvent.timestamp;
                 }
             }
         }

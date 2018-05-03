@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">flashlight</string>
+    <string name="app_name">Shakelight</string>
+    <string name="app_description">When enabled, shaking the phone activates the flashlight.</string>
 </resources>
